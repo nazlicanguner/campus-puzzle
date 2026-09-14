@@ -9,6 +9,8 @@ import com.nazlicanguner.campuspuzzle.model.ProblemData;
 import com.nazlicanguner.campuspuzzle.model.ScheduleEntry;
 import com.nazlicanguner.campuspuzzle.model.ScheduleResult;
 import com.nazlicanguner.campuspuzzle.util.JsonLoader;
+import com.nazlicanguner.campuspuzzle.backtracking.BacktrackingScheduler;
+import com.nazlicanguner.campuspuzzle.model.BacktrackingResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -68,6 +70,34 @@ public class Main {
         );
 
         printSchedule("Welsh-Powell + DP", optimizedResult);
+
+        BacktrackingScheduler backtrackingScheduler = new BacktrackingScheduler();
+
+        BacktrackingResult backtrackingResult = backtrackingScheduler.schedule(
+                data, 200_000L
+        );
+
+        printSchedule(
+                "Backtracking",
+                backtrackingResult.getScheduleResult()
+        );
+
+        System.out.println(
+                "Search complete: " + backtrackingResult.isSearchComplete()
+        );
+        System.out.println(
+                "Visited nodes: " + backtrackingResult.getVisitedNodes()
+        );
+
+        if (backtrackingResult.isSearchComplete()) {
+            System.out.println(
+                    "Optimality: proven for scheduled count, then wasted seats."
+            );
+        } else {
+            System.out.println(
+                    "Search limit reached. Best solution found; optimality not proven."
+            );
+        }
     }
 
     private static ScheduleResult optimizeColoredSchedule(
