@@ -1,16 +1,21 @@
 package com.nazlicanguner.campuspuzzle;
 
+import com.nazlicanguner.campuspuzzle.dp.RoomOptimizer;
+import com.nazlicanguner.campuspuzzle.graph.ConflictGraph;
+import com.nazlicanguner.campuspuzzle.graph.WelshPowellColoring;
 import com.nazlicanguner.campuspuzzle.greedy.GreedyScheduler;
+import com.nazlicanguner.campuspuzzle.model.ClassInfo;
 import com.nazlicanguner.campuspuzzle.model.ProblemData;
 import com.nazlicanguner.campuspuzzle.model.ScheduleEntry;
 import com.nazlicanguner.campuspuzzle.model.ScheduleResult;
 import com.nazlicanguner.campuspuzzle.util.JsonLoader;
-import com.nazlicanguner.campuspuzzle.graph.ConflictGraph;
-import com.nazlicanguner.campuspuzzle.graph.WelshPowellColoring;
-import java.util.Map;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Main {
 
@@ -53,10 +58,78 @@ public class Main {
         System.out.println("Colors used: " + colorCount);
         System.out.println();
 
-        GreedyScheduler scheduler = new GreedyScheduler();
-        ScheduleResult result = scheduler.schedule(data);
+        GreedyScheduler greedyScheduler = new GreedyScheduler();
+        ScheduleResult greedyResult = greedyScheduler.schedule(data);
 
-        System.out.println("Campus Puzzle - Greedy Baseline");
+        printSchedule("Greedy Baseline", greedyResult);
+
+        ScheduleResult optimizedResult = optimizeColoredSchedule(
+                data, colors
+        );
+
+        printSchedule("Welsh-Powell + DP", optimizedResult);
+    }
+
+    private static ScheduleResult optimizeColoredSchedule(
+            ProblemData data,
+            Map<String, Integer> colors
+    ) {
+        Map<Integer, List<ClassInfo>> classesBySlot = new LinkedHashMap<>();
+        List<ScheduleEntry> entries = new ArrayList<>();
+        Map<String, String> unscheduledReasons = new LinkedHashMap<>();
+
+        for (ClassInfo classInfo : data.getClasses()) {
+            Integer color = colors.get(classInfo.getId());
+
+            if (color == null || color < 0) {
+                throw new IllegalArgumentException(
+                        "Missing or invalid color for class "
+                                + classInfo.getId()
+                );
+            }
+
+            if (color >= data.getTimeSlots().size()) {
+                unscheduledReasons.put(
+                        classInfo.getId(),
+                        "Assigned color has no available time slot. "
+                                + "Recoloring or additional slots may be needed."
+                );
+                continue;
+            }
+
+            classesBySlot.computeIfAbsent(
+                    color, key -> new ArrayList<>()
+            ).add(classInfo);
+        }
+
+        RoomOptimizer optimizer = new RoomOptimizer();
+
+        for (int slotIndex = 0;
+             slotIndex < data.getTimeSlots().size();
+             slotIndex++) {
+
+            List<ClassInfo> slotClasses = classesBySlot.getOrDefault(
+                    slotIndex, List.of()
+            );
+
+            ScheduleResult slotResult = optimizer.optimizeSlot(
+                    slotClasses,
+                    data.getRooms(),
+                    data.getTimeSlots().get(slotIndex)
+            );
+
+            entries.addAll(slotResult.getEntries());
+            unscheduledReasons.putAll(slotResult.getUnscheduledReasons());
+        }
+
+        return new ScheduleResult(entries, unscheduledReasons);
+    }
+
+    private static void printSchedule(
+            String title,
+            ScheduleResult result
+    ) {
+        System.out.println("Campus Puzzle - " + title);
         System.out.println();
 
         for (ScheduleEntry entry : result.getEntries()) {
@@ -74,7 +147,7 @@ public class Main {
         }
 
         result.getUnscheduledReasons().entrySet().stream()
-                .sorted(java.util.Map.Entry.comparingByKey())
+                .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> System.out.printf(
                         "Unscheduled | %s | N/A | N/A | %s%n",
                         entry.getKey(),
@@ -87,5 +160,6 @@ public class Main {
         System.out.println(
                 "Total wasted seats: " + result.getTotalWastedSeats()
         );
+        System.out.println();
     }
 }
