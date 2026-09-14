@@ -71,6 +71,37 @@ public class Main {
 
         printSchedule("Greedy Baseline", greedyResult);
 
+        RoomOptimizer roomOptimizer = new RoomOptimizer();
+
+        List<ScheduleEntry> improvedEntries = new ArrayList<>();
+        Map<String, String> improvedReasons = new LinkedHashMap<>(
+                greedyResult.getUnscheduledReasons()
+        );
+
+        for (var timeSlot : data.getTimeSlots()) {
+            List<ClassInfo> slotClasses = greedyResult.getEntries().stream()
+                    .filter(entry ->
+                            entry.getTimeSlot().getId().equals(timeSlot.getId())
+                    )
+                    .map(ScheduleEntry::getClassInfo)
+                    .toList();
+
+            ScheduleResult slotResult = roomOptimizer.optimizeSlot(
+                    slotClasses,
+                    data.getRooms(),
+                    timeSlot
+            );
+
+            improvedEntries.addAll(slotResult.getEntries());
+            improvedReasons.putAll(slotResult.getUnscheduledReasons());
+        }
+
+        ScheduleResult greedyDpResult = new ScheduleResult(
+                improvedEntries, improvedReasons
+        );
+
+        printSchedule("Greedy Fixed Slots + DP", greedyDpResult);
+
         ScheduleResult optimizedResult = optimizeColoredSchedule(
                 data, colors
         );
@@ -109,6 +140,9 @@ public class Main {
 
         validator.validateOrThrow(data, greedyResult);
         System.out.println("Validation passed: Greedy");
+
+        validator.validateOrThrow(data, greedyDpResult);
+        System.out.println("Validation passed: Greedy Fixed Slots + DP");
 
         validator.validateOrThrow(data, optimizedResult);
         System.out.println("Validation passed: Welsh-Powell + DP");
