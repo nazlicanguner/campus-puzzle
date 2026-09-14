@@ -11,6 +11,7 @@ import com.nazlicanguner.campuspuzzle.model.ScheduleResult;
 import com.nazlicanguner.campuspuzzle.util.JsonLoader;
 import com.nazlicanguner.campuspuzzle.backtracking.BacktrackingScheduler;
 import com.nazlicanguner.campuspuzzle.model.BacktrackingResult;
+import com.nazlicanguner.campuspuzzle.util.ScheduleValidator;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -103,6 +104,20 @@ public class Main {
                     "Search limit reached. Best solution found; optimality not proven."
             );
         }
+
+        ScheduleValidator validator = new ScheduleValidator();
+
+        validator.validateOrThrow(data, greedyResult);
+        System.out.println("Validation passed: Greedy");
+
+        validator.validateOrThrow(data, optimizedResult);
+        System.out.println("Validation passed: Welsh-Powell + DP");
+
+        validator.validateOrThrow(
+                data, backtrackingResult.getScheduleResult()
+        );
+        System.out.println("Validation passed: Backtracking");
+
     }
 
     private static ScheduleResult optimizeColoredSchedule(
@@ -181,6 +196,7 @@ public class Main {
             );
         }
 
+
         result.getUnscheduledReasons().entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> System.out.printf(
@@ -197,4 +213,5 @@ public class Main {
         );
         System.out.println();
     }
+
 }
