@@ -23,9 +23,14 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         JsonLoader loader = new JsonLoader();
-        ProblemData data = loader.load(
-                Path.of("data", "constraints.json")
+        Path inputPath = Path.of(
+                args.length > 0 ? args[0] : "data/constraints.json"
         );
+
+        ProblemData data = loader.load(inputPath);
+
+        System.out.println("Input: " + inputPath);
+        System.out.println();
 
         ConflictGraph graph = new ConflictGraph(data);
 
