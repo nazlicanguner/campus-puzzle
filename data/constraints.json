@@ -1,0 +1,62 @@
+{
+  "classes": [
+    {
+      "id": "CS101",
+      "enrollment": 60,
+      "professorId": "P01"
+    },
+    {
+      "id": "MATH101",
+      "enrollment": 35,
+      "professorId": "P02"
+    },
+    {
+      "id": "CS102",
+      "enrollment": 30,
+      "professorId": "P01"
+    },
+    {
+      "id": "ENG101",
+      "enrollment": 25,
+      "professorId": "P03"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "R101",
+      "capacity": 80
+    },
+    {
+      "id": "R102",
+      "capacity": 40
+    }
+  ],
+  "studentGroups": [
+    {
+      "id": "G1",
+      "classIds": ["CS101", "MATH101"]
+    },
+    {
+      "id": "G2",
+      "classIds": ["MATH101", "CS102"]
+    },
+    {
+      "id": "G3",
+      "classIds": ["CS102", "ENG101"]
+    }
+  ],
+  "timeSlots": [
+    {
+      "id": "MON_09",
+      "label": "Monday 09:00-10:00"
+    },
+    {
+      "id": "MON_10",
+      "label": "Monday 10:00-11:00"
+    },
+    {
+      "id": "MON_11",
+      "label": "Monday 11:00-12:00"
+    }
+  ]
+}

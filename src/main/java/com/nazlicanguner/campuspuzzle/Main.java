@@ -1,35 +1,35 @@
 package com.nazlicanguner.campuspuzzle;
 
 import com.nazlicanguner.campuspuzzle.model.ClassInfo;
-import com.nazlicanguner.campuspuzzle.model.Room;
-import com.nazlicanguner.campuspuzzle.model.ScheduleEntry;
-import com.nazlicanguner.campuspuzzle.model.StudentGroup;
-import com.nazlicanguner.campuspuzzle.model.TimeSlot;
+import com.nazlicanguner.campuspuzzle.model.ProblemData;
+import com.nazlicanguner.campuspuzzle.util.JsonLoader;
 
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class Main {
 
-    public static void main(String[] args) {
-        ClassInfo classInfo = new ClassInfo("CS101", 60, "P01");
-        Room room = new Room("R101", 80);
-        TimeSlot timeSlot = new TimeSlot(
-                "MON_09", "Monday 09:00-10:00"
-        );
-        StudentGroup group = new StudentGroup(
-                "G1", Set.of(classInfo.getId())
-        );
+    public static void main(String[] args) throws IOException {
+        Path inputPath = Path.of("data", "constraints.json");
 
-        ScheduleEntry entry = new ScheduleEntry(
-                classInfo, room, timeSlot
-        );
+        JsonLoader loader = new JsonLoader();
+        ProblemData data = loader.load(inputPath);
 
         System.out.println("Campus Puzzle");
-        System.out.println("Class: " + entry.getClassInfo().getId());
-        System.out.println("Professor: " + classInfo.getProfessorId());
-        System.out.println("Group: " + group.getId());
-        System.out.println("Room: " + entry.getRoom().getId());
-        System.out.println("Time: " + entry.getTimeSlot().getLabel());
-        System.out.println("Wasted seats: " + entry.getWastedSeats());
+        System.out.println("Classes: " + data.getClasses().size());
+        System.out.println("Rooms: " + data.getRooms().size());
+        System.out.println("Student groups: " + data.getStudentGroups().size());
+        System.out.println("Time slots: " + data.getTimeSlots().size());
+
+        System.out.println();
+
+        for (ClassInfo classInfo : data.getClasses()) {
+            System.out.printf(
+                    "%s | Students: %d | Professor: %s%n",
+                    classInfo.getId(),
+                    classInfo.getEnrollment(),
+                    classInfo.getProfessorId()
+            );
+        }
     }
 }
