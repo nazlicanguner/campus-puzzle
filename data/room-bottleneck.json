@@ -1,0 +1,16 @@
+{
+  "classes": [
+    { "id": "A101", "enrollment": 40, "professorId": "P01" },
+    { "id": "B101", "enrollment": 35, "professorId": "P02" },
+    { "id": "C101", "enrollment": 30, "professorId": "P03" }
+  ],
+  "rooms": [
+    { "id": "R101", "capacity": 50 },
+    { "id": "R102", "capacity": 50 }
+  ],
+  "studentGroups": [],
+  "timeSlots": [
+    { "id": "MON_09", "label": "Monday 09:00-10:00" },
+    { "id": "MON_10", "label": "Monday 10:00-11:00" }
+  ]
+}
