@@ -1,7 +1,9 @@
 package com.nazlicanguner.campuspuzzle;
 
-import com.nazlicanguner.campuspuzzle.model.ClassInfo;
+import com.nazlicanguner.campuspuzzle.greedy.GreedyScheduler;
 import com.nazlicanguner.campuspuzzle.model.ProblemData;
+import com.nazlicanguner.campuspuzzle.model.ScheduleEntry;
+import com.nazlicanguner.campuspuzzle.model.ScheduleResult;
 import com.nazlicanguner.campuspuzzle.util.JsonLoader;
 
 import java.io.IOException;
@@ -10,26 +12,44 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        Path inputPath = Path.of("data", "constraints.json");
-
         JsonLoader loader = new JsonLoader();
-        ProblemData data = loader.load(inputPath);
+        ProblemData data = loader.load(
+                Path.of("data", "constraints.json")
+        );
 
-        System.out.println("Campus Puzzle");
-        System.out.println("Classes: " + data.getClasses().size());
-        System.out.println("Rooms: " + data.getRooms().size());
-        System.out.println("Student groups: " + data.getStudentGroups().size());
-        System.out.println("Time slots: " + data.getTimeSlots().size());
+        GreedyScheduler scheduler = new GreedyScheduler();
+        ScheduleResult result = scheduler.schedule(data);
 
+        System.out.println("Campus Puzzle - Greedy Baseline");
         System.out.println();
 
-        for (ClassInfo classInfo : data.getClasses()) {
+        for (ScheduleEntry entry : result.getEntries()) {
+            String capacityInfo = entry.getWastedSeats() == 0
+                    ? "Perfect Fit"
+                    : "Wasted " + entry.getWastedSeats() + " seats";
+
             System.out.printf(
-                    "%s | Students: %d | Professor: %s%n",
-                    classInfo.getId(),
-                    classInfo.getEnrollment(),
-                    classInfo.getProfessorId()
+                    "Scheduled | %s | %s | %s | %s%n",
+                    entry.getClassInfo().getId(),
+                    entry.getTimeSlot().getLabel(),
+                    entry.getRoom().getId(),
+                    capacityInfo
             );
         }
+
+        result.getUnscheduledReasons().entrySet().stream()
+                .sorted(java.util.Map.Entry.comparingByKey())
+                .forEach(entry -> System.out.printf(
+                        "Unscheduled | %s | N/A | N/A | %s%n",
+                        entry.getKey(),
+                        entry.getValue()
+                ));
+
+        System.out.println();
+        System.out.println("Scheduled: " + result.getScheduledCount());
+        System.out.println("Unscheduled: " + result.getUnscheduledCount());
+        System.out.println(
+                "Total wasted seats: " + result.getTotalWastedSeats()
+        );
     }
 }
